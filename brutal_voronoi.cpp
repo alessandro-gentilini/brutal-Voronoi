@@ -46,7 +46,7 @@ int main(int argc, const char* argv[])
    const size_t w = 400;
    const size_t h = 400;
    cv::Mat image(h,w,CV_8UC3);
-   image = 0;
+   image = cv::Scalar(0,0,0);
    random_int rd(0,std::min(h,w));
    std::vector< cv::Point > points;
 
@@ -54,7 +54,7 @@ int main(int argc, const char* argv[])
    double min_d = std::numeric_limits<double>::max();
    size_t my = 0;
 
-   for ( size_t i = 0; i < 20; i++ ) {
+   for ( size_t i = 0; i < 10; i++ ) {
       points.push_back( cv::Point( rd(), rd() ) );
 
       image.at<cv::Vec3b>(points.back()) = cv::Vec3b(255,255,255);
