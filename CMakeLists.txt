@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+PROJECT( brutal_voronoi )
+FIND_PACKAGE( OpenCV REQUIRED )
+ADD_EXECUTABLE( brutal_voronoi brutal_voronoi.cpp )
+TARGET_LINK_LIBRARIES( brutal_voronoi ${OpenCV_LIBS} )
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
