@@ -10,7 +10,7 @@ public:
    double operator()(){ return r(); }
 
 private:
-   std::function<double()> r;
+   std::function<int()> r;
 };
 
 
@@ -19,12 +19,21 @@ private:
 
 #include <vector>
 
-void nearest( const cv::Point& p, const std::vector< cv::Point >& points, cv::Point& n, std::vector< cv::Point >& remainders  )
+typedef float NUMBER;
+typedef cv::Point_<NUMBER> POINT;
+
+template < class NUMBER >
+NUMBER distance( const NUMBER& x1, const NUMBER& y1, const NUMBER& x2, const NUMBER& y2 )
 {
-   double min_d = std::numeric_limits<double>::max();
+   return std::hypot(x1-x2,y1-y2);
+}
+
+void nearest( const POINT& p, const std::vector< POINT >& points, POINT& n, std::vector< POINT >& remainders  )
+{
+   POINT::value_type min_d = std::numeric_limits<POINT::value_type>::max();
    size_t j = 0;
    for ( size_t i = 0; i < points.size(); i++ ) {
-      double d = cv::norm(p-points[i]);
+      POINT::value_type d = distance(p.x,points[i].x,p.y,points[i].y);
       if ( d < min_d && p != points[i] ) {
          min_d = d;
          n = points[i];
@@ -36,9 +45,10 @@ void nearest( const cv::Point& p, const std::vector< cv::Point >& points, cv::Po
 }
 
 // http://math.stackexchange.com/a/568565/10799
-double y_at_perpendicular_bisector(const cv::Point& p1, const cv::Point& p2, double x )
+template < class POINT >
+typename POINT::value_type y_at_perpendicular_bisector(const POINT& p1, const POINT& p2, typename POINT::value_type x )
 {
-   return (0.5*(std::pow(p1.x,2)+std::pow(p1.y,2)-std::pow(p2.x,2)-std::pow(p2.y,2))-(p1.x-p2.x)*x)/(p1.y-p2.y);
+   return (static_cast<typename POINT::value_type>(1)/static_cast<typename POINT::value_type>(2)*(std::pow(p1.x,2)+std::pow(p1.y,2)-std::pow(p2.x,2)-std::pow(p2.y,2))-(p1.x-p2.x)*x)/(p1.y-p2.y);
 }
 
 int main(int argc, const char* argv[])
@@ -48,18 +58,21 @@ int main(int argc, const char* argv[])
    cv::Mat image(h,w,CV_8UC3);
    image = cv::Scalar(0,0,0);
    random_int rd(0,std::min(h,w));
-   std::vector< cv::Point > points;
 
-   cv::Point center(h/2,w/2);
-   double min_d = std::numeric_limits<double>::max();
+
+
+   std::vector< POINT > points;
+
+   POINT center(h/2,w/2);
+   POINT::value_type min_d = std::numeric_limits<POINT::value_type>::max();
    size_t my = 0;
 
    for ( size_t i = 0; i < 10; i++ ) {
-      points.push_back( cv::Point( rd(), rd() ) );
+      points.push_back( POINT( rd(), rd() ) );
 
       image.at<cv::Vec3b>(points.back()) = cv::Vec3b(255,255,255);
 
-      double d = cv::norm(points.back()-center);
+      POINT::value_type d = distance(points.back().x,points.back().y,center.x,center.y);
       if ( d < min_d ) {
          my = i;
          min_d = d;
@@ -68,14 +81,14 @@ int main(int argc, const char* argv[])
 
 
 
-   cv::Point myp(points[my]);
+   POINT myp(points[my]);
 
    cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
    cv::circle(image,myp,3,cv::Scalar(0,255,0));
 
 
-   cv::Point n;
-   std::vector< cv::Point > r( points );
+   POINT n;
+   std::vector< POINT > r( points );
 
    while ( !r.empty() ) {
       nearest(myp,points,n,r);
